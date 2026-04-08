@@ -1,0 +1,197 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'package:intermediate_project/config/router_config.dart';
+import 'package:intermediate_project/error/exceptions.dart';
+import 'package:intermediate_project/model/get_all_stories_response.dart';
+import 'package:intermediate_project/model/get_detail_story_response.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class ApiService {
+  Future<bool> _ensureInternetConnection() async {
+    if (kIsWeb) {
+      return true;
+    }
+    var connectivityResult = await (Connectivity().checkConnectivity());
+
+    // ignore: unrelated_type_equality_checks
+    if (connectivityResult == ConnectivityResult.none) {
+      return false;
+    } else {
+      bool hasInternet = await InternetConnection().hasInternetAccess;
+      if (!hasInternet) {
+        throw NetworkException('Tidak ada WIFI atau internet yang tersambung');
+      }
+      return true;
+    }
+  }
+
+  Future<dynamic> _requestGet(
+    String endpoint,
+    String message,
+    bool authorized, {
+    String? queryParameters,
+  }) async {
+    try {
+      await _ensureInternetConnection();
+      Uri uri = Uri(
+        scheme: scheme,
+        host: host,
+        path: '$basePath/$endpoint',
+        queryParameters: {'id': queryParameters?.trim()},
+      );
+
+      final Map<String, String> headers = {'Accept': 'application/json'};
+      if (authorized) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String token = prefs.getString('token') ?? '';
+        if (token.isEmpty) {
+          throw DoesNotFoundTokenException("Tidak ditemukan token untuk otorisasi");
+        }
+        headers['Authorization'] = 'Bearer $token';
+      }
+
+      final response = await http
+          .get(uri, headers: headers)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }else if (response.statusCode == 401) {
+        throw DoesNotFoundTokenException('Token tidak valid atau tidak ditemukan');
+      }
+      else {
+        throw Exception('Failed with status code: ${response.statusCode}');
+      }
+    } on NetworkException {
+      rethrow;
+    } on DoesNotFoundTokenException {
+      rethrow;
+    } on TimeoutException {
+      throw Exception('Koneksi timeout, silakan coba lagi.');
+    } catch (e) {
+      throw Exception(message);
+    }
+  }
+
+  Future<dynamic> _requestPost(
+    String endpoint,
+    String message,
+    bool authorized, {
+    Map<String, dynamic>? body,
+  }) async {
+    try {
+      await _ensureInternetConnection();
+      Uri uri = Uri(
+        scheme: scheme,
+        host: host,
+        path: '$basePath/$endpoint',
+      );
+      final Map<String, String> headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
+      if (authorized) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String token = prefs.getString('token') ?? '';
+        if (token.isEmpty) {
+          throw DoesNotFoundTokenException("Tidak ditemukan token untuk otorisasi");
+        }
+        headers['Authorization'] = 'Bearer $token';
+      }
+
+      final response = await http
+          .post(uri, headers: headers, body: jsonEncode(body))
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else if (response.statusCode == 401) {
+        throw DoesNotFoundTokenException('Token tidak valid atau tidak ditemukan');
+      } else {
+        throw Exception('Failed with status code: ${response.statusCode}');
+      }
+    } on NetworkException {
+      rethrow;
+    } on DoesNotFoundTokenException {
+      rethrow;
+    } on TimeoutException {
+      throw Exception('Koneksi timeout, silakan coba lagi.');
+    } catch (e) {
+      throw Exception(message);
+    }
+  }
+
+  Future<dynamic> _requestPostMultipart(
+    String endpoint,
+    String message,
+    bool authorized, {
+    Map<String, String>? fields,
+    Map<String, String>? files,
+  }) async {
+    try {
+      await _ensureInternetConnection();
+      Uri uri = Uri(
+        scheme: scheme,
+        host: host,
+        path: '$basePath/$endpoint',
+      );
+      final request = http.MultipartRequest('POST', uri);
+      if (authorized) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String token = prefs.getString('token') ?? '';
+        if (token.isEmpty) {
+          throw DoesNotFoundTokenException("Tidak ditemukan token untuk otorisasi");
+        }
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      request.headers['Accept'] = 'application/json';
+      request.headers['Content-Type'] = 'multipart/form-data';
+      if (fields != null) {
+        request.fields.addAll(fields);
+      }
+      if (files != null) {
+        for (var entry in files.entries) {
+          request.files.add(await http.MultipartFile.fromPath(entry.key, entry.value));
+        }
+      }
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+      final response = await http.Response.fromStream(streamedResponse);
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      else if (response.statusCode == 401) {
+        throw DoesNotFoundTokenException('Token tidak valid atau tidak ditemukan');
+      } else {
+        throw Exception('Failed with status code: ${response.statusCode}');
+      }
+    } on NetworkException {
+      rethrow;
+    } on DoesNotFoundTokenException {
+      rethrow;
+    } on TimeoutException {
+      throw Exception('Koneksi timeout, silakan coba lagi.');
+    } catch (e) {
+      throw Exception(message);
+    }
+  }  
+
+
+  Future<GetAllStoriesResponse> getAllStories() async {
+    final response = await _requestGet(
+      storyEndpoint, 
+      'Gagal memuat cerita, silakan coba lagi.',
+      true,
+    );
+    return GetAllStoriesResponse.fromJson(response);
+  }
+
+  Future<GetDetailStoryResponse> getDetailStory(String id) async {
+    final response = await _requestGet(
+      storyEndpoint, 
+      'Gagal memuat detail cerita, silakan coba lagi.',
+      true,
+      queryParameters: id,
+    );
+    return GetDetailStoryResponse.fromJson(response);
+  }
+}
