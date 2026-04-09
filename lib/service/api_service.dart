@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:intermediate_project/config/router_config.dart';
 import 'package:intermediate_project/error/exceptions.dart';
+import 'package:intermediate_project/model/add_new_story_response.dart';
 import 'package:intermediate_project/model/get_all_stories_response.dart';
 import 'package:intermediate_project/model/get_detail_story_response.dart';
+import 'package:intermediate_project/model/login_response.dart';
+import 'package:intermediate_project/model/register_response.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -193,5 +197,58 @@ class ApiService {
       queryParameters: id,
     );
     return GetDetailStoryResponse.fromJson(response);
+  }
+
+  Future<RegisterResponse> register(String name, String email, String password) async {
+    final response = await _requestPost(
+      registerEndpoint, 
+      'Gagal melakukan registrasi, silakan coba lagi.',
+      false,
+      body: {'name': name, 'email': email, 'password': password},
+    ); 
+    return RegisterResponse.fromJson(response);
+  }
+
+  Future<LoginResponse> login(String email, String password) async {
+    final response = await _requestPost(
+      loginEndpoint, 
+      'Gagal melakukan login, silakan coba lagi.',
+      false,
+      body: {'email': email, 'password': password},
+    );
+    return LoginResponse.fromJson(response);
+  }
+
+  Future<AddNewStoryResponse> addNewStoryWithGuest(String description,  File photo, {String? lat, String? lon}) async {
+    Map<String, String> fields = {'description': description};
+    if (lat != null) fields['lat'] = lat;
+    if (lon != null) fields['lon'] = lon;
+
+    Map<String, String> files = {'photo': photo.path};
+
+    final response = await _requestPostMultipart(
+      storyEndpoint, 
+      'Gagal menambahkan cerita, silakan coba lagi.',
+      false,
+      fields: fields,
+      files: files,
+    );
+    return AddNewStoryResponse.fromJson(response);
+  }
+  Future<AddNewStoryResponse> addNewStoryWithAuth(String description,  File photo, {String? lat, String? lon}) async {
+    Map<String, String> fields = {'description': description};
+    if (lat != null) fields['lat'] = lat;
+    if (lon != null) fields['lon'] = lon;
+
+    Map<String, String> files = {'photo': photo.path};
+
+    final response = await _requestPostMultipart(
+      storyEndpoint, 
+      'Gagal menambahkan cerita, silakan coba lagi.',
+      true,
+      fields: fields,
+      files: files,
+    );
+    return AddNewStoryResponse.fromJson(response);
   }
 }
