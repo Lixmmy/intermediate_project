@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intermediate_project/provider/get_all_stories/get_all_stories_provider.dart';
+import 'package:intermediate_project/provider/get_detail_stories.dart/get_detail_provider.dart';
 import 'package:intermediate_project/provider/login/login_provider.dart';
 import 'package:intermediate_project/provider/register/register_provider.dart';
 import 'package:intermediate_project/routes/my_router.dart';
@@ -19,9 +20,9 @@ void main() {
               RegisterProvider(apiService: context.read<ApiService>()),
         ),
         ChangeNotifierProvider(
-          create: (context) =>
-              GetAllStoriesProvider(context.read<ApiService>()),
-        ),
+            create: (context) => GetAllStoriesProvider(context.read<ApiService>())
+          ),
+        ChangeNotifierProvider(create:  (context) => GetDetailProvider(context.read<ApiService>())),
       ],
       child: const MyApp(),
     ),
