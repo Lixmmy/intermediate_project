@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:intermediate_project/model/story.dart';
 
 class GetAllStoriesResponse extends Equatable{
-  final String error;
+  final bool error;
   final String message;
   final List<Story> stories;
 
@@ -10,9 +10,9 @@ class GetAllStoriesResponse extends Equatable{
 
   factory GetAllStoriesResponse.fromJson(Map<String, dynamic> json) {
     return GetAllStoriesResponse(
-      error: json['error'] as String,
+      error: json['error'] as bool,
       message: json['message'] as String,
-      stories: (json['stories'] as List)
+      stories: (json['listStory'] as List)
           .map((e) => Story.fromJson(e as Map<String, dynamic>))
           .toList(),
     );

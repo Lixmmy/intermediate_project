@@ -42,6 +42,7 @@ dependencies:
   provider: ^6.1.5+1
   go_router: ^17.2.0
   google_fonts: ^8.0.2
+  quickalert: ^1.1.0
 
 dev_dependencies:
   flutter_test:

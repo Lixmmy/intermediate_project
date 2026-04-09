@@ -1,8 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:intermediate_project/provider/get_all_stories/get_all_stories_provider.dart';
+import 'package:intermediate_project/provider/login/login_provider.dart';
+import 'package:intermediate_project/provider/register/register_provider.dart';
 import 'package:intermediate_project/routes/my_router.dart';
+import 'package:intermediate_project/service/api_service.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider(create: (_) => ApiService()),
+        ChangeNotifierProvider(
+          create: (context) => LoginProvider(context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              RegisterProvider(apiService: context.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              GetAllStoriesProvider(context.read<ApiService>()),
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -13,7 +36,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   void initState() {
     super.initState();

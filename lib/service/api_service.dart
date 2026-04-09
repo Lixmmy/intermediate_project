@@ -62,13 +62,16 @@ class ApiService {
       final response = await http
           .get(uri, headers: headers)
           .timeout(const Duration(seconds: 30));
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      }else if (response.statusCode == 401) {
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return responseBody;
+      } else if (response.statusCode == 401) {
         throw DoesNotFoundTokenException('Token tidak valid atau tidak ditemukan');
-      }
-      else {
-        throw Exception('Failed with status code: ${response.statusCode}');
+      } else {
+        final errorMessage = responseBody['message'] ?? 'Failed with status code: ${response.statusCode}';
+        throw Exception(errorMessage);
       }
     } on NetworkException {
       rethrow;
@@ -76,6 +79,8 @@ class ApiService {
       rethrow;
     } on TimeoutException {
       throw Exception('Koneksi timeout, silakan coba lagi.');
+    } on Exception {
+      rethrow;
     } catch (e) {
       throw Exception(message);
     }
@@ -94,7 +99,10 @@ class ApiService {
         host: host,
         path: '$basePath/$endpoint',
       );
-      final Map<String, String> headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
+      final Map<String, String> headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      };
       if (authorized) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String token = prefs.getString('token') ?? '';
@@ -107,12 +115,16 @@ class ApiService {
       final response = await http
           .post(uri, headers: headers, body: jsonEncode(body))
           .timeout(const Duration(seconds: 30));
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return responseBody;
       } else if (response.statusCode == 401) {
         throw DoesNotFoundTokenException('Token tidak valid atau tidak ditemukan');
       } else {
-        throw Exception('Failed with status code: ${response.statusCode}');
+        final errorMessage = responseBody['message'] ?? 'Failed with status code: ${response.statusCode}';
+        throw Exception(errorMessage);
       }
     } on NetworkException {
       rethrow;
@@ -120,6 +132,8 @@ class ApiService {
       rethrow;
     } on TimeoutException {
       throw Exception('Koneksi timeout, silakan coba lagi.');
+    } on Exception {
+      rethrow;
     } catch (e) {
       throw Exception(message);
     }
@@ -155,18 +169,23 @@ class ApiService {
       }
       if (files != null) {
         for (var entry in files.entries) {
-          request.files.add(await http.MultipartFile.fromPath(entry.key, entry.value));
+          request.files.add(
+              await http.MultipartFile.fromPath(entry.key, entry.value));
         }
       }
-      final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+      final streamedResponse =
+          await request.send().timeout(const Duration(seconds: 30));
       final response = await http.Response.fromStream(streamedResponse);
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      }
-      else if (response.statusCode == 401) {
+
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return responseBody;
+      } else if (response.statusCode == 401) {
         throw DoesNotFoundTokenException('Token tidak valid atau tidak ditemukan');
       } else {
-        throw Exception('Failed with status code: ${response.statusCode}');
+        final errorMessage = responseBody['message'] ?? 'Failed with status code: ${response.statusCode}';
+        throw Exception(errorMessage);
       }
     } on NetworkException {
       rethrow;
@@ -174,6 +193,8 @@ class ApiService {
       rethrow;
     } on TimeoutException {
       throw Exception('Koneksi timeout, silakan coba lagi.');
+    } on Exception {
+      rethrow;
     } catch (e) {
       throw Exception(message);
     }

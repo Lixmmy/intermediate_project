@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:intermediate_project/model/login_result.dart';
 
 class LoginResponse extends Equatable {
-  final String error;
+  final bool error;
   final String message;
   final LoginResult loginResult;
 
@@ -14,7 +14,7 @@ class LoginResponse extends Equatable {
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
-      error: json['error'] as String,
+      error: json['error'] as bool,
       message: json['message'] as String,
       loginResult: LoginResult.fromJson(
         json['loginResult'] as Map<String, dynamic>,
