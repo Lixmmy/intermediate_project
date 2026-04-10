@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intermediate_project/page/detail_story_page.dart';
 import 'package:intermediate_project/provider/get_all_stories/get_all_stories_provider.dart';
 import 'package:intermediate_project/provider/get_all_stories/get_all_stories_state.dart';
 import 'package:provider/provider.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class ListStoryPage extends StatefulWidget {
   const ListStoryPage({super.key});
@@ -25,12 +25,53 @@ class _ListStoryPageState extends State<ListStoryPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(title: const Text('List Story')),
         body: Consumer<GetAllStoriesProvider>(
           builder: (context, provider, child) {
             final state = provider.state;
 
             if (state is GetAllStoriesLoadingState) {
-              return const Center(child: CircularProgressIndicator());
+              return Skeletonizer(
+                child: ListView.builder(
+                  itemCount: 5,
+                  itemBuilder: (context, index) => Container(
+                    margin: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 200,
+                          width: double.infinity,
+                          color: Colors.grey[300],
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          height: 20,
+                          width: 150,
+                          color: Colors.grey[300],
+                        ),
+                        const SizedBox(height: 5),
+                        Container(
+                          height: 15,
+                          width: double.infinity,
+                          color: Colors.grey[300],
+                        ),
+                        const SizedBox(height: 5),
+                        Container(
+                          height: 15,
+                          width: 100,
+                          color: Colors.grey[300],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
             } else if (state is GetAllStoriesErrorState) {
               return Center(child: Text(state.errorMessage));
             } else if (state is GetAllStoriesSuccessState) {
@@ -42,7 +83,7 @@ class _ListStoryPageState extends State<ListStoryPage> {
                   final String waktu = story.createdAt;
                   DateTime dateTime = DateTime.parse(waktu);
                   String formatDateTime =
-                      '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
+                      '${dateTime.day}/${dateTime.month}/${dateTime.year}\n${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
                   return InkWell(
                     onTap: () {
                       context.pushNamed(
@@ -52,6 +93,7 @@ class _ListStoryPageState extends State<ListStoryPage> {
                     },
                     child: Container(
                       margin: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey),
                         borderRadius: BorderRadius.circular(10),
@@ -78,7 +120,10 @@ class _ListStoryPageState extends State<ListStoryPage> {
                           const SizedBox(height: 5),
                           Text(story.description),
                           const SizedBox(height: 5),
-                          Text(formatDateTime),
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: Text(formatDateTime),
+                          ),
                         ],
                       ),
                     ),
@@ -89,6 +134,20 @@ class _ListStoryPageState extends State<ListStoryPage> {
               return const SizedBox.shrink();
             }
           },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            final isUploaded = await context.pushNamed<bool>('add_story');
+
+            // 2. Jika isUploaded bernilai true, maka refresh list
+            if (isUploaded == true) {
+              if (mounted) {
+                // ignore: use_build_context_synchronously
+                context.read<GetAllStoriesProvider>().fetchAllStories();
+              }
+            }
+          },
+          child: const Icon(Icons.add_a_photo),
         ),
       ),
     );

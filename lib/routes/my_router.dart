@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:intermediate_project/page/add_story_page.dart';
 import 'package:intermediate_project/page/detail_story_page.dart';
 import 'package:intermediate_project/page/list_story_page.dart';
 import 'package:intermediate_project/page/login_page.dart';
@@ -10,11 +11,11 @@ GoRouter myRouter = GoRouter(
   redirect: (context, state) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString('token');
-    
+
     final bool loggedIn = token != null && token.isNotEmpty;
     final bool isLoggingIn = state.matchedLocation == '/';
     final bool isRegistering = state.matchedLocation == '/register';
-    
+
     if (!loggedIn) {
       return isLoggingIn || isRegistering ? null : '/';
     }
@@ -22,9 +23,9 @@ GoRouter myRouter = GoRouter(
     if (loggedIn && (isLoggingIn || isRegistering)) {
       return '/list_story';
     }
-    if(isRegistering){
+    if (isRegistering) {
       return '/register';
-    }else if(isLoggingIn){
+    } else if (isLoggingIn) {
       return '/';
     }
 
@@ -51,7 +52,15 @@ GoRouter myRouter = GoRouter(
       name: 'detail_story',
       builder: (context, state) {
         final id = state.pathParameters['id']!;
-        return DetailStoryPage(storyId: id);
+        return DetailStoryPage(id: id);
+      },
+    ),
+
+    GoRoute(
+      path: '/add_story',
+      name: 'add_story',
+      builder: (context, state) {
+        return AddStoryPage();
       },
     ),
   ],

@@ -1,14 +1,14 @@
 import 'package:equatable/equatable.dart';
 
-class AddNewStoryResponse extends Equatable{
-  final String error;
+class AddNewStoryResponse extends Equatable {
+  final bool error;
   final String message;
 
   const AddNewStoryResponse({required this.error, required this.message});
 
   factory AddNewStoryResponse.fromJson(Map<String, dynamic> json) {
     return AddNewStoryResponse(
-      error: json['error'] as String,
+      error: json['error'] as bool,
       message: json['message'] as String,
     );
   }

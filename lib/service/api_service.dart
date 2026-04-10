@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -37,28 +36,23 @@ class ApiService {
   Future<dynamic> _requestGet(
     String endpoint,
     String message,
-    bool authorized, {
-    String? queryParameters,
-  }) async {
+    bool authorized,
+  ) async {
     try {
       await _ensureInternetConnection();
-      Uri uri = Uri(
-        scheme: scheme,
-        host: host,
-        path: '$basePath/$endpoint',
-        queryParameters: {'id': queryParameters?.trim()},
-      );
+      Uri uri = Uri(scheme: scheme, host: host, path: '$basePath/$endpoint');
 
       final Map<String, String> headers = {'Accept': 'application/json'};
       if (authorized) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String token = prefs.getString('token') ?? '';
         if (token.isEmpty) {
-          throw DoesNotFoundTokenException("Tidak ditemukan token untuk otorisasi");
+          throw DoesNotFoundTokenException(
+            "Tidak ditemukan token untuk otorisasi",
+          );
         }
         headers['Authorization'] = 'Bearer $token';
       }
-
       final response = await http
           .get(uri, headers: headers)
           .timeout(const Duration(seconds: 30));
@@ -71,7 +65,9 @@ class ApiService {
         responseBody['message'] ??= 'Token tidak valid atau tidak ditemukan';
         throw DoesNotFoundTokenException(responseBody['message']!);
       } else {
-        final errorMessage = responseBody['message'] ?? 'Failed with status code: ${response.statusCode}';
+        final errorMessage =
+            responseBody['message'] ??
+            'Failed with status code: ${response.statusCode}';
         throw Exception(errorMessage);
       }
     } on NetworkException {
@@ -95,20 +91,18 @@ class ApiService {
   }) async {
     try {
       await _ensureInternetConnection();
-      Uri uri = Uri(
-        scheme: scheme,
-        host: host,
-        path: '$basePath/$endpoint',
-      );
+      Uri uri = Uri(scheme: scheme, host: host, path: '$basePath/$endpoint');
       final Map<String, String> headers = {
         'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       };
       if (authorized) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String token = prefs.getString('token') ?? '';
         if (token.isEmpty) {
-          throw DoesNotFoundTokenException("Tidak ditemukan token untuk otorisasi");
+          throw DoesNotFoundTokenException(
+            "Tidak ditemukan token untuk otorisasi",
+          );
         }
         headers['Authorization'] = 'Bearer $token';
       }
@@ -125,7 +119,9 @@ class ApiService {
         responseBody['message'] ??= 'Token tidak valid atau tidak ditemukan';
         throw DoesNotFoundTokenException(responseBody['message']!);
       } else {
-        final errorMessage = responseBody['message'] ?? 'Failed with status code: ${response.statusCode}';
+        final errorMessage =
+            responseBody['message'] ??
+            'Failed with status code: ${response.statusCode}';
         throw Exception(errorMessage);
       }
     } on NetworkException {
@@ -146,37 +142,43 @@ class ApiService {
     String message,
     bool authorized, {
     Map<String, String>? fields,
-    Map<String, String>? files,
+    Map<String, List<int>>? files,
+    String? fileName,
   }) async {
     try {
       await _ensureInternetConnection();
-      Uri uri = Uri(
-        scheme: scheme,
-        host: host,
-        path: '$basePath/$endpoint',
-      );
+      Uri uri = Uri(scheme: scheme, host: host, path: '$basePath/$endpoint');
       final request = http.MultipartRequest('POST', uri);
       if (authorized) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String token = prefs.getString('token') ?? '';
         if (token.isEmpty) {
-          throw DoesNotFoundTokenException("Tidak ditemukan token untuk otorisasi");
+          throw DoesNotFoundTokenException(
+            "Tidak ditemukan token untuk otorisasi",
+          );
         }
         request.headers['Authorization'] = 'Bearer $token';
       }
       request.headers['Accept'] = 'application/json';
       request.headers['Content-Type'] = 'multipart/form-data';
+
       if (fields != null) {
         request.fields.addAll(fields);
       }
-      if (files != null) {
+      if (files != null && fileName != null) {
         for (var entry in files.entries) {
           request.files.add(
-              await http.MultipartFile.fromPath(entry.key, entry.value));
+            http.MultipartFile.fromBytes(
+              entry.key,
+              entry.value,
+              filename: fileName,
+            ),
+          );
         }
       }
-      final streamedResponse =
-          await request.send().timeout(const Duration(seconds: 30));
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+      );
       final response = await http.Response.fromStream(streamedResponse);
 
       final Map<String, dynamic> responseBody = jsonDecode(response.body);
@@ -184,9 +186,13 @@ class ApiService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return responseBody;
       } else if (response.statusCode == 401) {
-        throw DoesNotFoundTokenException('Token tidak valid atau tidak ditemukan');
+        throw DoesNotFoundTokenException(
+          'Token tidak valid atau tidak ditemukan',
+        );
       } else {
-        final errorMessage = responseBody['message'] ?? 'Failed with status code: ${response.statusCode}';
+        final errorMessage =
+            responseBody['message'] ??
+            'Failed with status code: ${response.statusCode}';
         throw Exception(errorMessage);
       }
     } on NetworkException {
@@ -200,12 +206,11 @@ class ApiService {
     } catch (e) {
       throw Exception(message);
     }
-  }  
-
+  }
 
   Future<GetAllStoriesResponse> getAllStories() async {
     final response = await _requestGet(
-      storyEndpoint, 
+      storyEndpoint,
       'Gagal memuat cerita, silakan coba lagi.',
       true,
     );
@@ -214,27 +219,30 @@ class ApiService {
 
   Future<GetDetailStoryResponse> getDetailStory(String id) async {
     final response = await _requestGet(
-      storyEndpoint, 
+      '$storyEndpoint/$id',
       'Gagal memuat detail cerita, silakan coba lagi.',
       true,
-      queryParameters: id,
     );
     return GetDetailStoryResponse.fromJson(response);
   }
 
-  Future<RegisterResponse> register(String name, String email, String password) async {
+  Future<RegisterResponse> register(
+    String name,
+    String email,
+    String password,
+  ) async {
     final response = await _requestPost(
-      registerEndpoint, 
+      registerEndpoint,
       'Gagal melakukan registrasi, silakan coba lagi.',
       false,
       body: {'name': name, 'email': email, 'password': password},
-    ); 
+    );
     return RegisterResponse.fromJson(response);
   }
 
   Future<LoginResponse> login(String email, String password) async {
     final response = await _requestPost(
-      loginEndpoint, 
+      loginEndpoint,
       'Gagal melakukan login, silakan coba lagi.',
       false,
       body: {'email': email, 'password': password},
@@ -242,35 +250,26 @@ class ApiService {
     return LoginResponse.fromJson(response);
   }
 
-  Future<AddNewStoryResponse> addNewStoryWithGuest(String description,  File photo, {String? lat, String? lon}) async {
+  Future<AddNewStoryResponse> addNewStoryWithAuth(
+    String description,
+    List<int> bytes,
+    String fileName, {
+    String? lat,
+    String? lon,
+  }) async {
     Map<String, String> fields = {'description': description};
     if (lat != null) fields['lat'] = lat;
     if (lon != null) fields['lon'] = lon;
 
-    Map<String, String> files = {'photo': photo.path};
+    Map<String, List<int>> files = {'photo': bytes};
 
     final response = await _requestPostMultipart(
-      storyEndpoint, 
-      'Gagal menambahkan cerita, silakan coba lagi.',
-      false,
-      fields: fields,
-      files: files,
-    );
-    return AddNewStoryResponse.fromJson(response);
-  }
-  Future<AddNewStoryResponse> addNewStoryWithAuth(String description,  File photo, {String? lat, String? lon}) async {
-    Map<String, String> fields = {'description': description};
-    if (lat != null) fields['lat'] = lat;
-    if (lon != null) fields['lon'] = lon;
-
-    Map<String, String> files = {'photo': photo.path};
-
-    final response = await _requestPostMultipart(
-      storyEndpoint, 
+      storyEndpoint,
       'Gagal menambahkan cerita, silakan coba lagi.',
       true,
       fields: fields,
       files: files,
+      fileName: fileName,
     );
     return AddNewStoryResponse.fromJson(response);
   }

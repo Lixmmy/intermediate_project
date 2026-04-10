@@ -46,7 +46,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     TextButton(
                       onPressed: () {
                         context.goNamed('login');
-                        Navigator.of(context).pop();
+                        if (mounted) Navigator.pop(context, true);
                       },
                       child: const Text('OK'),
                     ),
@@ -170,10 +170,10 @@ class _RegisterPageState extends State<RegisterPage> {
                             : () {
                                 if (_formKey.currentState!.validate()) {
                                   context.read<RegisterProvider>().register(
-                                        _usernameController.text,
-                                        _emailController.text,
-                                        _passwordController.text,
-                                      );
+                                    _usernameController.text,
+                                    _emailController.text,
+                                    _passwordController.text,
+                                  );
                                 }
                               },
                         style: ElevatedButton.styleFrom(
