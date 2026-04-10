@@ -68,7 +68,8 @@ class ApiService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return responseBody;
       } else if (response.statusCode == 401) {
-        throw DoesNotFoundTokenException('Token tidak valid atau tidak ditemukan');
+        responseBody['message'] ??= 'Token tidak valid atau tidak ditemukan';
+        throw DoesNotFoundTokenException(responseBody['message']!);
       } else {
         final errorMessage = responseBody['message'] ?? 'Failed with status code: ${response.statusCode}';
         throw Exception(errorMessage);
@@ -121,7 +122,8 @@ class ApiService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return responseBody;
       } else if (response.statusCode == 401) {
-        throw DoesNotFoundTokenException('Token tidak valid atau tidak ditemukan');
+        responseBody['message'] ??= 'Token tidak valid atau tidak ditemukan';
+        throw DoesNotFoundTokenException(responseBody['message']!);
       } else {
         final errorMessage = responseBody['message'] ?? 'Failed with status code: ${response.statusCode}';
         throw Exception(errorMessage);

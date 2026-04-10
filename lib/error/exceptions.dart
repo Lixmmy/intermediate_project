@@ -5,7 +5,7 @@ class NetworkException implements Exception {
 
   @override
   String toString() {
-    return 'NetworkException: $message';
+    return ' message';
   }
 }
 
@@ -16,6 +16,6 @@ class DoesNotFoundTokenException implements Exception {
 
   @override
   String toString() {
-    return 'DoesNotFoundTokenException: $message';
+    return ' $message';
   }
 }

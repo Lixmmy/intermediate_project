@@ -45,8 +45,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   actions: [
                     TextButton(
                       onPressed: () {
-                        Navigator.of(context).pop();
                         context.goNamed('login');
+                        Navigator.of(context).pop();
                       },
                       child: const Text('OK'),
                     ),

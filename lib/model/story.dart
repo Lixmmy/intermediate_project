@@ -6,8 +6,8 @@ class Story extends Equatable {
   final String description;
   final String photoUrl;
   final String createdAt;
-  final num lat;
-  final num lon;
+  final num? lat;
+  final num? lon;
 
   const Story({
     required this.id,
@@ -15,8 +15,8 @@ class Story extends Equatable {
     required this.description,
     required this.photoUrl,
     required this.createdAt,
-    required this.lat,
-    required this.lon,
+     this.lat,
+     this.lon,
   });
 
   factory Story.fromJson(Map<String, dynamic> json) {
@@ -26,8 +26,8 @@ class Story extends Equatable {
       description: json['description'] as String,
       photoUrl: json['photoUrl'] as String,
       createdAt: json['createdAt'] as String,
-      lat: json['lat'] as num,
-      lon: json['lon'] as num,
+      lat: json['lat'] as num?,
+      lon: json['lon'] as num?,
     );
   }
 

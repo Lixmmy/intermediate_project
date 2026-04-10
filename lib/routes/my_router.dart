@@ -13,13 +13,19 @@ GoRouter myRouter = GoRouter(
     
     final bool loggedIn = token != null && token.isNotEmpty;
     final bool isLoggingIn = state.matchedLocation == '/';
-
+    final bool isRegistering = state.matchedLocation == '/register';
+    
     if (!loggedIn) {
-      return isLoggingIn ? null : '/';
+      return isLoggingIn || isRegistering ? null : '/';
     }
 
-    if (isLoggingIn ) {
+    if (loggedIn && (isLoggingIn || isRegistering)) {
       return '/list_story';
+    }
+    if(isRegistering){
+      return '/register';
+    }else if(isLoggingIn){
+      return '/';
     }
 
     return null;
