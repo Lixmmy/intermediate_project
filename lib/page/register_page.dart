@@ -30,6 +30,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: Text('Register')),
       body: Consumer<RegisterProvider>(
         builder: (context, registerProvider, child) {
           final state = registerProvider.state;
@@ -45,8 +46,10 @@ class _RegisterPageState extends State<RegisterPage> {
                   actions: [
                     TextButton(
                       onPressed: () {
-                        context.goNamed('login');
-                        if (mounted) Navigator.pop(context, true);
+                        if (mounted) {
+                          context.goNamed('login');
+                        }
+                        context.read<RegisterProvider>().resetState();
                       },
                       child: const Text('OK'),
                     ),

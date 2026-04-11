@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intermediate_project/provider/get_all_stories/get_all_stories_provider.dart';
 import 'package:intermediate_project/provider/get_all_stories/get_all_stories_state.dart';
+import 'package:intermediate_project/provider/login/login_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:quickalert/quickalert.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ListStoryPage extends StatefulWidget {
@@ -26,7 +28,30 @@ class _ListStoryPageState extends State<ListStoryPage> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(title: const Text('List Story')),
+        appBar: AppBar(
+          title: const Text('List Story'),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.logout),
+              onPressed: () {
+                QuickAlert.show(
+                  context: context,
+                  type: QuickAlertType.confirm,
+                  text: "Apakah anda ingin logout",
+                  confirmBtnText: "Ya",
+                  onConfirmBtnTap: () {
+                    context.read<LoginProvider>().logout();
+                    context.goNamed('login');
+                  },
+                  cancelBtnText: "tidak",
+                  onCancelBtnTap: () {
+                    context.pop(context);
+                  },
+                );
+              },
+            ),
+          ],
+        ),
         body: Consumer<GetAllStoriesProvider>(
           builder: (context, provider, child) {
             final state = provider.state;

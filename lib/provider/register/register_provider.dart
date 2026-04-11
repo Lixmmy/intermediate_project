@@ -2,14 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:intermediate_project/provider/register/register_state.dart';
 import 'package:intermediate_project/service/api_service.dart';
 
-class RegisterProvider extends ChangeNotifier{
+class RegisterProvider extends ChangeNotifier {
   final ApiService apiService;
 
   RegisterProvider({required this.apiService});
-  
+
   RegisterState _state = RegisterInitialState();
   RegisterState get state => _state;
-
 
   Future<void> register(String name, String email, String password) async {
     try {
@@ -32,4 +31,9 @@ class RegisterProvider extends ChangeNotifier{
     }
   }
 
+  Future<void> resetState() async {
+    if (_state is RegisterSuccessState) {
+      _state = RegisterInitialState();
+    }
+  }
 }

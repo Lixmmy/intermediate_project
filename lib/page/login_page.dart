@@ -160,7 +160,7 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(width: 5),
                       TextButton(
                         onPressed: () {
-                          context.goNamed('register');
+                          context.pushNamed('register');
                         },
                         child: Text(
                           'Register',

@@ -5,7 +5,11 @@ class LoginResult extends Equatable {
   final String name;
   final String token;
 
-  const LoginResult({required this.userId, required this.name, required this.token});
+  const LoginResult({
+    required this.userId,
+    required this.name,
+    required this.token,
+  });
 
   factory LoginResult.fromJson(Map<String, dynamic> json) {
     return LoginResult(

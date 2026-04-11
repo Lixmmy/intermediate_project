@@ -1,12 +1,16 @@
 import 'package:equatable/equatable.dart';
 import 'package:intermediate_project/model/story.dart';
 
-class GetAllStoriesResponse extends Equatable{
+class GetAllStoriesResponse extends Equatable {
   final bool error;
   final String message;
   final List<Story> stories;
 
-  const GetAllStoriesResponse({required this.error, required this.message, required this.stories});
+  const GetAllStoriesResponse({
+    required this.error,
+    required this.message,
+    required this.stories,
+  });
 
   factory GetAllStoriesResponse.fromJson(Map<String, dynamic> json) {
     return GetAllStoriesResponse(
