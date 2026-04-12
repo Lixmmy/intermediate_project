@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intermediate_project/provider/get_detail_stories.dart/get_detail_provider.dart';
 import 'package:intermediate_project/provider/get_detail_stories.dart/get_detail_state.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +14,8 @@ class DetailStoryPage extends StatefulWidget {
 }
 
 class _DetailStoryPageState extends State<DetailStoryPage> {
+  late GoogleMapController mapController;
+
   @override
   void initState() {
     super.initState();
@@ -45,15 +48,33 @@ class _DetailStoryPageState extends State<DetailStoryPage> {
                         color: Colors.grey[300],
                       ),
                       const SizedBox(height: 8),
-                      Container(height: 24, width: 200, color: Colors.grey[300]),
+                      Container(
+                        height: 24,
+                        width: 200,
+                        color: Colors.grey[300],
+                      ),
                       const SizedBox(height: 4),
-                      Container(height: 16, width: 150, color: Colors.grey[300]),
+                      Container(
+                        height: 16,
+                        width: 150,
+                        color: Colors.grey[300],
+                      ),
                       const SizedBox(height: 16),
-                      Container(height: 20, width: 100, color: Colors.grey[300]),
+                      Container(
+                        height: 20,
+                        width: 100,
+                        color: Colors.grey[300],
+                      ),
                       const SizedBox(height: 8),
                       Container(
                         height: 16,
                         width: double.infinity,
+                        color: Colors.grey[300],
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        height: 300,
+                        width: MediaQuery.of(context).size.width * 0.9,
                         color: Colors.grey[300],
                       ),
                     ],
@@ -67,6 +88,7 @@ class _DetailStoryPageState extends State<DetailStoryPage> {
                 DateTime dateTime = DateTime.parse(waktu);
                 String formatDateTime =
                     '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
+
                 return Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -93,20 +115,69 @@ class _DetailStoryPageState extends State<DetailStoryPage> {
                         formatDateTime,
                         style: const TextStyle(color: Colors.grey),
                       ),
-                      Divider(color: Colors.grey),
+                      const Divider(color: Colors.grey),
                       const SizedBox(height: 16),
-                      Text(
+                      const Text(
                         "Deskripsi:",
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         '\t${story.description}',
                         style: const TextStyle(fontSize: 16),
                       ),
+                      const SizedBox(height: 16),
+                      (story.lat != null && story.lon != null)
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Lokasi:",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.9,
+                                  height: 300,
+                                  child: GoogleMap(
+                                    markers: {
+                                      Marker(
+                                        markerId: MarkerId(widget.id),
+                                        position: LatLng(
+                                          story.lat!,
+                                          story.lon!,
+                                        ),
+                                        onTap: () {
+                                          mapController.animateCamera(
+                                            CameraUpdate.newLatLngZoom(
+                                              LatLng(story.lat!, story.lon!),
+                                              12,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    },
+                                    initialCameraPosition: CameraPosition(
+                                      zoom: 12,
+                                      target: LatLng(story.lat!, story.lon!),
+                                    ),
+                                    onMapCreated: (controller) {
+                                      setState(() {
+                                        mapController = controller;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            )
+                          : const Icon(Icons.location_off),
                     ],
                   ),
                 );

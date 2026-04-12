@@ -6,8 +6,8 @@ class Story extends Equatable {
   final String description;
   final String photoUrl;
   final String createdAt;
-  final num? lat;
-  final num? lon;
+  final double? lat;
+  final double? lon;
 
   const Story({
     required this.id,
@@ -26,8 +26,8 @@ class Story extends Equatable {
       description: json['description'] as String,
       photoUrl: json['photoUrl'] as String,
       createdAt: json['createdAt'] as String,
-      lat: json['lat'] as num?,
-      lon: json['lon'] as num?,
+      lat: json['lat'] as double?,
+      lon: json['lon'] as double?,
     );
   }
 

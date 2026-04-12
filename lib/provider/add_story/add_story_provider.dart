@@ -18,8 +18,10 @@ class AddStoryProvider extends ChangeNotifier {
   Future<void> addStory(
     String description,
     List<int> photo,
-    String fileName,
-  ) async {
+    String fileName, {
+    double? lat,
+    double? lon,
+  }) async {
     try {
       _state = AddStoryLoadingState();
       notifyListeners();
@@ -27,6 +29,8 @@ class AddStoryProvider extends ChangeNotifier {
         description,
         photo,
         fileName,
+        lat: lat?.toString(),
+        lon: lon?.toString(),
       );
       if (!response.error) {
         _state = AddStorySuccessState(response.message);
@@ -107,4 +111,5 @@ class AddStoryProvider extends ChangeNotifier {
 
     return newByte;
   }
+
 }
