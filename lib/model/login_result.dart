@@ -1,5 +1,9 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'login_result.g.dart';
+
+@JsonSerializable()
 class LoginResult extends Equatable {
   final String userId;
   final String name;
@@ -12,14 +16,10 @@ class LoginResult extends Equatable {
   });
 
   factory LoginResult.fromJson(Map<String, dynamic> json) {
-    return LoginResult(
-      userId: json['userId'] as String,
-      name: json['name'] as String,
-      token: json['token'] as String,
-    );
+    return _$LoginResultFromJson(json);
   }
   Map<String, dynamic> toJson() {
-    return {'userId': userId, 'name': name, 'token': token};
+    return _$LoginResultToJson(this);
   }
 
   @override

@@ -15,12 +15,28 @@ class ListStoryPage extends StatefulWidget {
 }
 
 class _ListStoryPageState extends State<ListStoryPage> {
+  final ScrollController scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<GetAllStoriesProvider>().fetchAllStories();
+      final provider = context.read<GetAllStoriesProvider>();
+      provider.resetPagination();
+      provider.fetchAllStories();
     });
+    scrollController.addListener(() {
+      if (scrollController.position.pixels ==
+          scrollController.position.maxScrollExtent) {
+        context.read<GetAllStoriesProvider>().fetchAllStories();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    scrollController.dispose();
   }
 
   @override
@@ -59,6 +75,7 @@ class _ListStoryPageState extends State<ListStoryPage> {
             if (state is GetAllStoriesLoadingState) {
               return Skeletonizer(
                 child: ListView.builder(
+                  controller: scrollController,
                   itemCount: 5,
                   itemBuilder: (context, index) => Container(
                     margin: const EdgeInsets.all(10),
@@ -102,13 +119,25 @@ class _ListStoryPageState extends State<ListStoryPage> {
             } else if (state is GetAllStoriesSuccessState) {
               final stories = state.stories;
               return ListView.builder(
-                itemCount: stories.length,
+                controller: scrollController,
+                itemCount:
+                    stories.length + (provider.pageItems == null ? 0 : 1),
                 itemBuilder: (context, index) {
+                  if (index == stories.length) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+
                   final story = stories[index];
                   final String waktu = story.createdAt;
                   DateTime dateTime = DateTime.parse(waktu);
                   String formatDateTime =
                       '${dateTime.day}/${dateTime.month}/${dateTime.year}\n${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
+
                   return InkWell(
                     onTap: () {
                       context.pushNamed(
@@ -168,7 +197,9 @@ class _ListStoryPageState extends State<ListStoryPage> {
             if (isUploaded == true) {
               if (mounted) {
                 // ignore: use_build_context_synchronously
-                context.read<GetAllStoriesProvider>().fetchAllStories();
+                final provider = context.read<GetAllStoriesProvider>();
+                provider.resetPagination();
+                provider.fetchAllStories();
               }
             }
           },

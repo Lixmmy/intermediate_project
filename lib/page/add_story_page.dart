@@ -1,8 +1,9 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+import 'package:location/location.dart' as loc;
 import 'package:provider/provider.dart';
 import 'package:intermediate_project/provider/add_story/add_story_provider.dart';
 import 'package:intermediate_project/provider/add_story/add_story_state.dart';
@@ -21,8 +22,9 @@ class _AddStoryPageState extends State<AddStoryPage> {
 
   // Variabel Lokasi
   LatLng? _selectedLocation;
+  String? _address;
   GoogleMapController? _mapController;
-  final Location _locationService = Location();
+  final loc.Location _locationService = loc.Location();
 
   @override
   void dispose() {
@@ -31,10 +33,31 @@ class _AddStoryPageState extends State<AddStoryPage> {
     super.dispose();
   }
 
+  // Fungsi mendapatkan alamat dari koordinat
+  Future<void> _getAddress(LatLng location) async {
+    try {
+      final placemarks = await placemarkFromCoordinates(
+        location.latitude,
+        location.longitude,
+      );
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        setState(() {
+          _address =
+              '${place.street}, ${place.subLocality}, ${place.locality}, ${place.postalCode}, ${place.country}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _address = "Gagal memuat alamat";
+      });
+    }
+  }
+
   // Fungsi mengambil lokasi saat ini
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled;
-    PermissionStatus permissionGranted;
+    loc.PermissionStatus permissionGranted;
 
     // Cek apakah GPS aktif
     serviceEnabled = await _locationService.serviceEnabled();
@@ -45,9 +68,9 @@ class _AddStoryPageState extends State<AddStoryPage> {
 
     // Cek izin lokasi
     permissionGranted = await _locationService.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
+    if (permissionGranted == loc.PermissionStatus.denied) {
       permissionGranted = await _locationService.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) return;
+      if (permissionGranted != loc.PermissionStatus.granted) return;
     }
 
     // Ambil data lokasi
@@ -57,6 +80,8 @@ class _AddStoryPageState extends State<AddStoryPage> {
     setState(() {
       _selectedLocation = latLng;
     });
+
+    _getAddress(latLng);
 
     // Geser kamera peta ke lokasi baru
     _mapController?.animateCamera(
@@ -191,6 +216,7 @@ class _AddStoryPageState extends State<AddStoryPage> {
                     setState(() {
                       _selectedLocation = location;
                     });
+                    _getAddress(location);
                   },
                   markers: _selectedLocation == null
                       ? {}
@@ -206,9 +232,23 @@ class _AddStoryPageState extends State<AddStoryPage> {
             if (_selectedLocation != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  "Koordinat: ${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}",
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_address != null)
+                      Text(
+                        _address!,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.blueGrey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    Text(
+                      "Koordinat: ${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}",
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
                 ),
               ),
 

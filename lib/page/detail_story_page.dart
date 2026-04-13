@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intermediate_project/provider/get_detail_stories.dart/get_detail_provider.dart';
 import 'package:intermediate_project/provider/get_detail_stories.dart/get_detail_state.dart';
@@ -15,6 +16,7 @@ class DetailStoryPage extends StatefulWidget {
 
 class _DetailStoryPageState extends State<DetailStoryPage> {
   late GoogleMapController mapController;
+  String? _address;
 
   @override
   void initState() {
@@ -22,6 +24,23 @@ class _DetailStoryPageState extends State<DetailStoryPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<GetDetailProvider>().fetchDetailStory(widget.id);
     });
+  }
+
+  Future<void> _getAddress(double lat, double lon) async {
+    try {
+      final placemarks = await placemarkFromCoordinates(lat, lon);
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        setState(() {
+          _address =
+              '${place.street}, ${place.subLocality}, ${place.locality}, ${place.postalCode}, ${place.country}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _address = "Gagal memuat alamat";
+      });
+    }
   }
 
   @override
@@ -89,6 +108,10 @@ class _DetailStoryPageState extends State<DetailStoryPage> {
                 String formatDateTime =
                     '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
 
+                if (story.lat != null && story.lon != null && _address == null) {
+                  _getAddress(story.lat!, story.lon!);
+                }
+
                 return Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -141,6 +164,17 @@ class _DetailStoryPageState extends State<DetailStoryPage> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                                if (_address != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: Text(
+                                      _address!,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.blueGrey,
+                                      ),
+                                    ),
+                                  ),
                                 const SizedBox(height: 8),
                                 SizedBox(
                                   width:

@@ -1,9 +1,14 @@
 import 'package:equatable/equatable.dart';
 import 'package:intermediate_project/model/story.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'get_all_stories_response.g.dart';
+
+@JsonSerializable()
 class GetAllStoriesResponse extends Equatable {
   final bool error;
   final String message;
+  @JsonKey(name: 'listStory')
   final List<Story> stories;
 
   const GetAllStoriesResponse({
@@ -13,16 +18,10 @@ class GetAllStoriesResponse extends Equatable {
   });
 
   factory GetAllStoriesResponse.fromJson(Map<String, dynamic> json) {
-    return GetAllStoriesResponse(
-      error: json['error'] as bool,
-      message: json['message'] as String,
-      stories: (json['listStory'] as List)
-          .map((e) => Story.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
+    return _$GetAllStoriesResponseFromJson(json);
   }
   Map<String, dynamic> toJson() {
-    return {'error': error, 'message': message};
+    return _$GetAllStoriesResponseToJson(this);
   }
 
   @override

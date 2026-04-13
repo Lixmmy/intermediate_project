@@ -15,6 +15,9 @@ import 'package:internet_connection_checker_plus/internet_connection_checker_plu
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
+  int? page;
+  int? size;
+
   Future<bool> _ensureInternetConnection() async {
     if (kIsWeb) {
       return true;
@@ -36,11 +39,18 @@ class ApiService {
   Future<dynamic> _requestGet(
     String endpoint,
     String message,
-    bool authorized,
-  ) async {
+    bool authorized, {
+    int? page,
+    int? size,
+  }) async {
     try {
       await _ensureInternetConnection();
-      Uri uri = Uri(scheme: scheme, host: host, path: '$basePath/$endpoint');
+      Uri uri = Uri(
+        scheme: scheme,
+        host: host,
+        path: '$basePath/$endpoint',
+        queryParameters: {'page': page.toString(), 'size': size.toString()},
+      );
 
       final Map<String, String> headers = {'Accept': 'application/json'};
       if (authorized) {
@@ -213,6 +223,8 @@ class ApiService {
       storyEndpoint,
       'Gagal memuat cerita, silakan coba lagi.',
       true,
+      page: page,
+      size: size,
     );
     return GetAllStoriesResponse.fromJson(response);
   }

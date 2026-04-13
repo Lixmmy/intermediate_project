@@ -1,5 +1,9 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'register_response.g.dart';
+
+@JsonSerializable()
 class RegisterResponse extends Equatable {
   final bool error;
   final String message;
@@ -7,13 +11,10 @@ class RegisterResponse extends Equatable {
   const RegisterResponse({required this.error, required this.message});
 
   factory RegisterResponse.fromJson(Map<String, dynamic> json) {
-    return RegisterResponse(
-      error: json['error'] as bool,
-      message: json['message'] as String,
-    );
+    return _$RegisterResponseFromJson(json);
   }
   Map<String, dynamic> toJson() {
-    return {'error': error, 'message': message};
+    return _$RegisterResponseToJson(this);
   }
 
   @override

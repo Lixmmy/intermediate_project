@@ -1,5 +1,9 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'add_new_story_response.g.dart';
+
+@JsonSerializable()
 class AddNewStoryResponse extends Equatable {
   final bool error;
   final String message;
@@ -7,13 +11,10 @@ class AddNewStoryResponse extends Equatable {
   const AddNewStoryResponse({required this.error, required this.message});
 
   factory AddNewStoryResponse.fromJson(Map<String, dynamic> json) {
-    return AddNewStoryResponse(
-      error: json['error'] as bool,
-      message: json['message'] as String,
-    );
+    return _$AddNewStoryResponseFromJson(json);
   }
   Map<String, dynamic> toJson() {
-    return {'error': error, 'message': message};
+    return _$AddNewStoryResponseToJson(this);
   }
 
   @override
